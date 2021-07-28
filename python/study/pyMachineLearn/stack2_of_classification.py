@@ -1,3 +1,4 @@
+#! WARNING: this py file is not intended for running!
 import numpy as np
 import pandas as pd
 import matplotlib as mpl                  
@@ -94,6 +95,70 @@ confusion_matrix(y_train_is5 ,y_train_pred)
 #recall : true positive / true positive + false negative "don't let false pass"
 #sencitivity : true positive / true positive + false positive  "don't let true go away"
 #f1 : tiao he ping jun zhi of recall&sensitivity
+
+
+#setting up its thresthold: indirect ---- decision_function:
+scores = sgd_clf.decision_function()
+    # default threshhold is 0
+    #use other threshold:
+pred = (scores > 10000 )#threshold num
+
+    # to sure this threshold
+#1 get all scores:
+y_scores = cross_val_predict(sgd_clf,X_train,y_train_is5,cv = 3 , method="decision_function") 
+#2 plot curve:
+from sklearn.metrics import precision_recall_curve    #just calulation
+pre , rec , thresh = precision_recall_curve(y_train_is5,y_scores)
+
+def plot_precision_recall_vs_threshold(precisions, recalls, thresholds):
+    plt.plot(thresholds, precisions[:-1], "b--", label="Precision", linewidth=2)
+    plt.plot(thresholds, recalls[:-1], "g-", label="Recall", linewidth=2)
+    plt.xlabel("Threshold", fontsize=16)
+    plt.legend(loc="upper left", fontsize=16)
+    plt.ylim([0, 1])
+
+
+#Meanwhile, ROC curve: almost the same:
+from sklearn.metrics import roc_curve
+fpr , tpr , thresh = roc_curve(y_train_is5, y_scores)
+    #calulate its Area by:
+from sklearn.metrics import roc_auc_score
+roc_auc_score(y_train_is5, y_scores)
+
+    #for RandomFroestclassifiers:, use dict_proba instead of desicition_function:
+from sklearn.ensemble import RandomForestClassifier
+forest_clf = RandomForestClassifier()
+y_pro = cross_val_predict(forest_clf , X_train , y_train_is5 , cv= 3 , method= 'predict_proba')
+    #pick positive probability:
+y_scores = y_pro[:,:1]
+
+
+
+
+#Multiclass classification:
+#Randomforest & baes --auto multiclass , for bin-only classifiers:
+#One vs All: build classifier for each:(prefered in sklearn)
+#One vs one: build classifier for each 2 classes
+
+#forcing ovo or ova:
+from sklearn.multiclass import OneVsOneClassifier , OneVsRestClassifier
+    # and put themoutside the classifier
+
+
+#Analyzing the errors:
+#1 confusion matrix:
+con_m = confusion_matrix(y_train,y_pred)
+plt.matshow(con_m , cmap = plt.cm.gray)#use plt.cm.grey, show general
+row_sums = con_m.sum(axis = 1, keep_dims = True)#focus on errors:
+norm_con_m = con_m / row_sums
+
+
+#Multilabels classification / MultiOutput Classification
+
+
+
+
+
 
 
 
